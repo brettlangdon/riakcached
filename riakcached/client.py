@@ -35,7 +35,7 @@ class RiakClient(object):
         self._timeout = timeout
         self._connect()
 
-    def set_serializer(self, content_type, serializer, deserializer):
+    def setup_serializer(self, content_type, serializer, deserializer):
         """
         """
         content_type = content_type.lower()
