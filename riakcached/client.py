@@ -135,8 +135,28 @@ class RiakClient(object):
             url="%s/stats" % self.url,
         )
         if response.status == 200:
+    def props(self):
+        """
+        """
+        response = self._request(
+            method="GET",
+            url="%s/buckets/%s/props" % (self.url, self.bucket),
+        )
+        if response.status == 200:
             return json.loads(response.data)
         return None
+
+    def set_props(self, props):
+        serializer = self._serializers.get("application/json", json.dumps)
+        response = self._request(
+            method="PUT",
+            url="%s/buckets/%s/props" % (self.url, self.bucket),
+            body=serializer(props),
+            headers={
+                "Content-Type": "application/json",
+            }
+        )
+        return response.status == 200
 
     def ping(self):
         """
