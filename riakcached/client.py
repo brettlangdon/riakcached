@@ -158,6 +158,16 @@ class RiakClient(object):
         )
         return response.status == 200
 
+    def keys(self):
+        response = self._request(
+            method="GET",
+            url="%s/buckets/%s/keys?keys=true" % (self.url, self.bucket),
+        )
+        if response.status == 200:
+            deserializer = self._deserializers.get("application/json", json.loads)
+            return deserializer(response.data)
+        return None
+
     def ping(self):
         """
         """
