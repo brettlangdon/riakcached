@@ -85,7 +85,7 @@ class RiakClient(object):
 
         response = self._request(
             method="POST",
-            url="%s/riak/%s/%s" % (self.url, self.bucket, key),
+            url="%s/buckets/%s/keys/%s" % (self.url, self.bucket, key),
             body=value,
             headers={
                 "Content-Type": content_type,
@@ -135,6 +135,10 @@ class RiakClient(object):
             url="%s/stats" % self.url,
         )
         if response.status == 200:
+            deserializer = self._deserializers.get("application/json", json.loads)
+            return deserializer(response.data)
+        return None
+
     def props(self):
         """
         """
