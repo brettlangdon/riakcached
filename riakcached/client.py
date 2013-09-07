@@ -48,13 +48,13 @@ class RiakClient(object):
         if self._pool:
             self._pool.close()
 
-    def get(self, key):
+    def get(self, key, counter=False):
         """
         """
-        response = self._request(
-            method="GET",
-            url="%s/riak/%s/%s" % (self.url, self.bucket, key),
-        )
+        url = "%s/buckets/%s/keys/%s" % (self.url, self.bucket, key)
+        if counter:
+            url = "%s/buckets/%s/counters/%s" % (self.url, self.bucket, key)
+        response = self._request(method="GET", url=url)
         if response.status == 400:
             raise exceptions.RiakcachedBadRequest(response.data)
         elif response.status == 503:
@@ -182,12 +182,14 @@ class RiakClient(object):
         """
         response = self._request(
             method="POST",
-            url="%s/riak/%s/counters/%s" % (self.url, self.bucket, key),
+            url="%s/buckets/%s/counters/%s" % (self.url, self.bucket, key),
             body=str(value),
         )
         if response.status == 409:
             raise exceptions.RiakcachedConflict(response.data)
-        return True
+        elif response.status == 400:
+            raise exceptions.RiakcachedBadRequest(response.data)
+        return response.status in (200, 201, 204, 300)
 
     def _connect(self):
         self._pool = urllib3.connection_from_url(self.url)
