@@ -111,7 +111,7 @@ class RiakClient(object):
         """
         response = self._request(
             method="DELETE",
-            url="%s/riak/%s/%s" % (self.url, self.bucket, key),
+            url="%s/buckets/%s/keys/%s" % (self.url, self.bucket, key),
         )
         if response.status == 400:
             raise exceptions.RiakcachedBadRequest(response.data)
