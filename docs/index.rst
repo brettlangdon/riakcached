@@ -9,7 +9,7 @@ Contents:
    client
    exceptions
 
-A Memcached like interface to the Riak HTTP Client.
+A Memcached like interface to the Riak HTTP API.
 
 Indices and tables
 ==================
