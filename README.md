@@ -22,5 +22,4 @@ make html
 
 ## TODO
 * Add Docstrings to methods
-* Setup Travis CI
 * Write a better README.md
