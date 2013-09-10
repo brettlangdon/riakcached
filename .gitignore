@@ -1,3 +1,5 @@
+.coverage
+.cache
 .ropeproject
 *.py[co]
 *.log
