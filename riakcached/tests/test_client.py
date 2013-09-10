@@ -21,17 +21,22 @@ class TestRiakClient(unittest2.TestCase):
         client = RiakClient("test_bucket", url="http://127.0.0.1:8098/", auto_connect=False)
         self.assertEqual(client.url, "http://127.0.0.1:8098")
 
-    def test_client_adds_serializer_and_deserializer(self):
+    def test_client_adds_serializer(self):
         serializer = mock.Mock()
+
+        client = RiakClient("test_bucket", auto_connect=False)
+        client.add_serializer("application/test", serializer)
+        self.assertEqual(client._serializers["application/test"], serializer)
+        client.serialize("test", "application/test")
+        serializer.assert_called()
+
+    def test_client_adds_deserializer(self):
         deserializer = mock.Mock()
 
         client = RiakClient("test_bucket", auto_connect=False)
-        client.setup_serializer("application/test", serializer, deserializer)
-        self.assertEqual(client._serializers["application/test"], serializer)
+        client.add_deserializer("application/test", deserializer)
         self.assertEqual(client._deserializers["application/test"], deserializer)
-        client._serializers["application/test"]()
-        client._deserializers["application/test"]()
-        serializer.assert_called()
+        client.deserialize("test", "application/test")
         deserializer.assert_called()
 
     def test_client_calls_pool_close(self):
@@ -140,7 +145,7 @@ class TestGet(unittest2.TestCase):
             return "deserialized"
 
         client = RiakClient("test_bucket")
-        client.setup_serializer("application/test", None, deserializer)
+        client.add_deserializer("application/test", deserializer)
         client._pool.urlopen.return_value = InlineClass({
             "status": 200,
             "data": "some data",
@@ -247,7 +252,7 @@ class TestSet(unittest2.TestCase):
             return "serialized"
 
         client = RiakClient("test_bucket")
-        client.setup_serializer("application/test", serializer, None)
+        client.add_serializer("application/test", serializer)
         client._pool.urlopen.return_value = InlineClass({
             "status": 204,
             "data": "",

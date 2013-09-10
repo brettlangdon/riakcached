@@ -37,12 +37,29 @@ class RiakClient(object):
         if auto_connect:
             self._connect()
 
-    def setup_serializer(self, content_type, serializer, deserializer):
+    def add_serializer(self, content_type, serializer):
         """
         """
         content_type = content_type.lower()
         self._serializers[content_type] = serializer
+
+    def add_deserializer(self, content_type, deserializer):
+        """
+        """
+        content_type = content_type.lower()
         self._deserializers[content_type] = deserializer
+
+    def serialize(self, data, content_type):
+        """
+        """
+        serializer = self._serializers.get(content_type, str)
+        return serializer(data)
+
+    def deserialize(self, data, content_type):
+        """
+        """
+        deserializer = self._deserializers.get(content_type, str)
+        return deserializer(data)
 
     def close(self):
         """
@@ -65,8 +82,7 @@ class RiakClient(object):
         if response.status not in (200, 300, 304):
             return None
 
-        deserializer = self._deserializers.get(response.getheader("content-type"), str)
-        return deserializer(response.data)
+        return self.deserialize(response.data, response.getheader("content-type"))
 
     def get_many(self, keys):
         """
@@ -82,8 +98,7 @@ class RiakClient(object):
     def set(self, key, value, content_type="text/plain"):
         """
         """
-        serializer = self._serializers.get(content_type.lower(), str)
-        value = serializer(value)
+        value = self.serialize(value, content_type)
 
         response = self._request(
             method="POST",
@@ -137,8 +152,7 @@ class RiakClient(object):
             url="%s/stats" % self.url,
         )
         if response.status == 200:
-            deserializer = self._deserializers.get("application/json", json.loads)
-            return deserializer(response.data)
+            return self.deserialize(response.data, "application/json")
         return None
 
     def props(self):
@@ -153,11 +167,10 @@ class RiakClient(object):
         return None
 
     def set_props(self, props):
-        serializer = self._serializers.get("application/json", json.dumps)
         response = self._request(
             method="PUT",
             url="%s/buckets/%s/props" % (self.url, self.bucket),
-            body=serializer(props),
+            body=self.serialize(props, "application/json"),
             headers={
                 "Content-Type": "application/json",
             }
@@ -170,8 +183,7 @@ class RiakClient(object):
             url="%s/buckets/%s/keys?keys=true" % (self.url, self.bucket),
         )
         if response.status == 200:
-            deserializer = self._deserializers.get("application/json", json.loads)
-            return deserializer(response.data)
+            return self.deserialize(response.data, "application/json")
         return None
 
     def ping(self):
