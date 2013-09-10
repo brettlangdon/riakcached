@@ -1,6 +1,8 @@
 Riakcached
 ==========
 
+[![Build Status](https://travis-ci.org/brettlangdon/riakcached.png?branch=master)](https://travis-ci.org/brettlangdon/riakcached)
+
 A Memcached like interface to the Riak HTTP Client.
 
 
