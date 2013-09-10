@@ -1,14 +1,15 @@
-import unittest
 
 import mock
+import unittest2
 import urllib3.exceptions
+
 
 from riakcached import exceptions
 from riakcached.client import RiakClient
 from riakcached.tests.utils import InlineClass
 
 
-class TestRiakClient(unittest.TestCase):
+class TestRiakClient(unittest2.TestCase):
     def setUp(self):
         self.patched_connection_from_url = mock.patch("urllib3.connection_from_url")
         self.connection_from_url = self.patched_connection_from_url.start()
@@ -76,7 +77,7 @@ class TestRiakClient(unittest.TestCase):
         )
 
 
-class TestGet(unittest.TestCase):
+class TestGet(unittest2.TestCase):
     def setUp(self):
         self.patched_connection_from_url = mock.patch("urllib3.connection_from_url")
         self.connection_from_url = self.patched_connection_from_url.start()
@@ -179,7 +180,7 @@ class TestGet(unittest.TestCase):
         )
 
 
-class TestSet(unittest.TestCase):
+class TestSet(unittest2.TestCase):
     def setUp(self):
         self.patched_connection_from_url = mock.patch("urllib3.connection_from_url")
         self.connection_from_url = self.patched_connection_from_url.start()
@@ -297,7 +298,7 @@ class TestSet(unittest.TestCase):
         )
 
 
-class TestDelete(unittest.TestCase):
+class TestDelete(unittest2.TestCase):
     def setUp(self):
         self.patched_connection_from_url = mock.patch("urllib3.connection_from_url")
         self.connection_from_url = self.patched_connection_from_url.start()
@@ -364,7 +365,7 @@ class TestDelete(unittest.TestCase):
         )
 
 
-class TestCounter(unittest.TestCase):
+class TestCounter(unittest2.TestCase):
     def setUp(self):
         self.patched_connection_from_url = mock.patch("urllib3.connection_from_url")
         self.connection_from_url = self.patched_connection_from_url.start()
@@ -423,7 +424,7 @@ class TestCounter(unittest.TestCase):
         self.assertFalse(client.incr("test"))
 
 
-class TestPing(unittest.TestCase):
+class TestPing(unittest2.TestCase):
     def setUp(self):
         self.patched_connection_from_url = mock.patch("urllib3.connection_from_url")
         self.connection_from_url = self.patched_connection_from_url.start()
@@ -463,7 +464,7 @@ class TestPing(unittest.TestCase):
         self.assertFalse(client.ping())
 
 
-class TestStats(unittest.TestCase):
+class TestStats(unittest2.TestCase):
     def setUp(self):
         self.patched_connection_from_url = mock.patch("urllib3.connection_from_url")
         self.connection_from_url = self.patched_connection_from_url.start()
@@ -503,7 +504,7 @@ class TestStats(unittest.TestCase):
         self.assertIsNone(client.stats())
 
 
-class TestProps(unittest.TestCase):
+class TestProps(unittest2.TestCase):
     def setUp(self):
         self.patched_connection_from_url = mock.patch("urllib3.connection_from_url")
         self.connection_from_url = self.patched_connection_from_url.start()
@@ -563,7 +564,7 @@ class TestProps(unittest.TestCase):
         )
 
 
-class TestKeys(unittest.TestCase):
+class TestKeys(unittest2.TestCase):
     def setUp(self):
         self.patched_connection_from_url = mock.patch("urllib3.connection_from_url")
         self.connection_from_url = self.patched_connection_from_url.start()
