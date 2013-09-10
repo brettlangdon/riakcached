@@ -4,8 +4,7 @@ Riakcached
 [![Build Status](https://travis-ci.org/brettlangdon/riakcached.png?branch=master)](https://travis-ci.org/brettlangdon/riakcached)
 [![Coverage Status](https://coveralls.io/repos/brettlangdon/riakcached/badge.png?branch=master)](https://coveralls.io/r/brettlangdon/riakcached?branch=master)
 
-A Memcached like interface to the Riak HTTP Client.
-
+A Memcached like interface to the Riak HTTP Client. [Read The Docs](http://riakcached.readthedocs.org/en/latest/)
 
 ## Documentation
 The documentation can be found in the `/docs` directory in this repository and should be fairly complete for the codebase.
