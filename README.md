@@ -2,6 +2,7 @@ Riakcached
 ==========
 
 [![Build Status](https://travis-ci.org/brettlangdon/riakcached.png?branch=master)](https://travis-ci.org/brettlangdon/riakcached)
+[![Coverage Status](https://coveralls.io/repos/brettlangdon/riakcached/badge.png?branch=master)](https://coveralls.io/r/brettlangdon/riakcached?branch=master)
 
 A Memcached like interface to the Riak HTTP Client.
 

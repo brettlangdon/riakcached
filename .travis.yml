@@ -2,5 +2,6 @@ language: python
 python:
   - "2.6"
   - "2.7"
-install: "pip install -r test-requirements.txt pytest"
-script: "py.test"
+install: "pip install -r test-requirements.txt pytest pytest-cov coveralls"
+script: "py.test --cov riakcached --cov-report term-missing riakcached/tests"
+after_script: "coveralls"
