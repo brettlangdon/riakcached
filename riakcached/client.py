@@ -20,12 +20,6 @@ class RiakClient(object):
         "bucket",
         "url",
     ]
-    _serializers = {
-        "application/json": json.dumps,
-    }
-    _deserializers = {
-        "application/json": json.loads,
-    }
 
     def __init__(self, bucket, url="http://127.0.0.1:8098", timeout=2):
         """
@@ -34,6 +28,12 @@ class RiakClient(object):
         self.url = url.strip("/")
         self._timeout = timeout
         self._connect()
+        self._serializers = {
+            "application/json": json.dumps,
+        }
+        self._deserializers = {
+            "application/json": json.loads,
+        }
 
     def setup_serializer(self, content_type, serializer, deserializer):
         """
