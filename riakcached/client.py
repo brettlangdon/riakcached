@@ -167,6 +167,8 @@ class RiakClient(object):
         return None
 
     def set_props(self, props):
+        """
+        """
         response = self._request(
             method="PUT",
             url="%s/buckets/%s/props" % (self.url, self.bucket),
@@ -178,6 +180,8 @@ class RiakClient(object):
         return response.status == 200
 
     def keys(self):
+        """
+        """
         response = self._request(
             method="GET",
             url="%s/buckets/%s/keys?keys=true" % (self.url, self.bucket),
