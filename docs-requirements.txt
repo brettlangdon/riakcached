@@ -1,0 +1,3 @@
+sphinx
+sphinx-contrib-fulltoc
+-r requirements.txt
