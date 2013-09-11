@@ -6,8 +6,9 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   client
+   clients
    exceptions
+   pools
 
 A Memcached like interface to the Riak HTTP API.
 

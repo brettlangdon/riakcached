@@ -5,7 +5,7 @@ import urllib3.exceptions
 
 
 from riakcached import exceptions
-from riakcached.client import RiakClient
+from riakcached.clients import RiakClient
 from riakcached.tests.utils import InlineClass
 
 
