@@ -28,7 +28,7 @@ class RiakClient(object):
             self.pool = pool
 
         self.bucket = bucket
-        self.base_url = pool.url
+        self.base_url = self.pool.url.rstrip("/")
         self._serializers = {
             "application/json": json.dumps,
         }
