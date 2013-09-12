@@ -9,6 +9,10 @@ import riakcached.pools
 
 
 class TestRiakClient(unittest2.TestCase):
+    def test_uses_default_pool(self):
+        client = RiakClient("test_bucket")
+        self.assertIsInstance(client.pool, riakcached.pools.Urllib3Pool)
+
     def test_client_strips_trailing_url_slash(self):
         pool = mock.Mock(spec=riakcached.pools.Pool)
         pool.url = "http://127.0.0.1:8098/"
@@ -33,8 +37,6 @@ class TestRiakClient(unittest2.TestCase):
         client.deserialize("test", "application/test")
         deserializer.assert_called()
 
-
-class TestRiakClientGet(unittest2.TestCase):
     def test_get_calls_pool_request_for_counters(self):
         pool = mock.Mock(spec=riakcached.pools.Pool)
         pool.request.return_value = None, None, None
@@ -106,8 +108,6 @@ class TestRiakClientGet(unittest2.TestCase):
             url="http://127.0.0.1:8098/buckets/test_bucket/keys/test2",
         )
 
-
-class TestRiakClientSet(unittest2.TestCase):
     def test_set_calls_pool_request_with_correct_content_type(self):
         pool = mock.Mock(spec=riakcached.pools.Pool)
         pool.request.return_value = None, None, None
@@ -197,8 +197,6 @@ class TestRiakClientSet(unittest2.TestCase):
             },
         )
 
-
-class TestRiakClientDelete(unittest2.TestCase):
     def test_delete_invalid_status(self):
         pool = mock.Mock(spec=riakcached.pools.Pool)
         pool.request.return_value = 200, "", {}
@@ -240,8 +238,6 @@ class TestRiakClientDelete(unittest2.TestCase):
             url="http://127.0.0.1:8098/buckets/test_bucket/keys/test2",
         )
 
-
-class TestRiakClientCounter(unittest2.TestCase):
     def test_incr_calls_pool_urlopen_with_value(self):
         pool = mock.Mock(spec=riakcached.pools.Pool)
         pool.request.return_value = None, None, None
@@ -280,8 +276,6 @@ class TestRiakClientCounter(unittest2.TestCase):
         client = RiakClient("test_bucket", pool=pool)
         self.assertFalse(client.incr("test"))
 
-
-class TestRiakClientPing(unittest2.TestCase):
     def test_ping_valid_status(self):
         pool = mock.Mock(spec=riakcached.pools.Pool)
         pool.request.return_value = 200, "", {}
@@ -300,8 +294,6 @@ class TestRiakClientPing(unittest2.TestCase):
         client.ping()
         self.assertFalse(client.ping())
 
-
-class TestRiakClientStats(unittest2.TestCase):
     def test_stats_valid_status(self):
         pool = mock.Mock(spec=riakcached.pools.Pool)
         pool.request.return_value = 200, '{"test": "stats"}', {}
@@ -320,8 +312,6 @@ class TestRiakClientStats(unittest2.TestCase):
         client = RiakClient("test_bucket", pool=pool)
         self.assertIsNone(client.stats())
 
-
-class TestRiakClientProps(unittest2.TestCase):
     def test_props_valid_status(self):
         pool = mock.Mock(spec=riakcached.pools.Pool)
         pool.request.return_value = 200, '{"test": "props"}', {}
@@ -358,22 +348,18 @@ class TestRiakClientProps(unittest2.TestCase):
             },
         )
 
-
-class TestRiakClientKeys(unittest2.TestCase):
     def test_keys_valid_status(self):
         pool = mock.Mock(spec=riakcached.pools.Pool)
         pool.request.return_value = 200, '["key1", "key2"]', {}
         pool.url = "http://127.0.0.1:8098"
 
         client = RiakClient("test_bucket", pool=pool)
-        client.ping()
         self.assertEqual(client.keys(), ["key1", "key2"])
 
-    def test_ping_invalid_status(self):
+    def test_keys_invalid_status(self):
         pool = mock.Mock(spec=riakcached.pools.Pool)
         pool.request.return_value = 204, "", {}
         pool.url = "http://127.0.0.1:8098"
 
         client = RiakClient("test_bucket", pool=pool)
-        client.ping()
         self.assertIsNone(client.keys())
