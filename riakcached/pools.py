@@ -65,4 +65,3 @@ class Urllib3Pool(Pool):
             raise exceptions.RiakcachedTimeout(e.message)
         except urllib3.exceptions.HTTPError, e:
             raise exceptions.RiakcachedConnectionError(e.message)
-        return None, None, None
