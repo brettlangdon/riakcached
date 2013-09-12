@@ -9,7 +9,7 @@ from riakcached.pools import Urllib3Pool
 
 
 class RiakClient(object):
-    """
+    """A Memcache like client to the Riak HTTP Interface
     """
     __slots__ = [
         "_serializers",
@@ -20,7 +20,14 @@ class RiakClient(object):
     ]
 
     def __init__(self, bucket, pool=None):
-        """
+        """Constructor for a new :class:`riakcached.clients.RiakClient`
+
+        Pool - if no pool is provided then a default :class:`riakcached.pools.Urllib3Pool` is used
+
+        :param bucket: The name of the Riak bucket to use
+        :type bucket: str
+        :param pool: The :class:`riakcached.pools.Pool` to use for requests
+        :type pool: :class:`riakcached.pools.Pool`
         """
         if pool is None:
             self.pool = Urllib3Pool()
@@ -37,31 +44,94 @@ class RiakClient(object):
         }
 
     def add_serializer(self, content_type, serializer):
-        """
+        """Add a content-type serializer to the client
+
+        The `serializer` function should have the following definition::
+
+            def serializer(data):
+                return do_something(data)
+
+        and should return a `str`
+
+        Example::
+
+            def base64_serializer(data):
+                return base64.b64encode(data)
+            client.add_serializer("application/base64", base64_serializer)
+
+
+        :param content_type: the content-type to associate `serializer` with
+        :type content_type: str
+        :param serializer: the serializer function to use with `content_type`
+        :type serializer: function
         """
         content_type = content_type.lower()
         self._serializers[content_type] = serializer
 
     def add_deserializer(self, content_type, deserializer):
-        """
+        """Add a content-type deserializer to the client
+
+        The `deserializer` function should have the following definition::
+
+            def deserializer(data):
+                return undo_something(data)
+
+        Example::
+
+            def base64_deserializer(data):
+                return base64.b64decode(data)
+            client.add_deserializer("application/base64", base64_deserializer)
+
+
+        :param content_type: the content-type to associate `deserializer` with
+        :type content_type: str
+        :param deserializer: the deserializer function to use with `content_type`
+        :type deserializer: function
         """
         content_type = content_type.lower()
         self._deserializers[content_type] = deserializer
 
     def serialize(self, data, content_type):
-        """
+        """Serialize the provided `data` to `content_type`
+
+        This method will lookup the registered serializer for the provided Content-Type
+        (defaults to str(data)) and passes `data` through the serializer.
+
+        :param data: the data to serialize
+        :type data: object
+        :param content_type: the desired Content-Type for the provided `data`
+        :type content_type: str
+        :returns: str - the serialized data
         """
         serializer = self._serializers.get(content_type, str)
         return serializer(data)
 
     def deserialize(self, data, content_type):
-        """
+        """Deserialize the provided `data` from `content_type`
+
+        This method will lookup the registered deserializer for the provided Content-Type
+        (defaults to str(data)) and passes `data` through the deserializer.
+
+        :param data: the data to deserialize
+        :type data: str
+        :param content_type: the Content-Type to deserialize `data` from
+        :type content_type: str
+        :returns: object - whatever the deserializer returns
         """
         deserializer = self._deserializers.get(content_type, str)
         return deserializer(data)
 
     def get(self, key, counter=False):
-        """
+        """Get the value of the key from the client's `bucket`
+
+        :param key: the key to get from the bucket
+        :type key: str
+        :param counter: whether or not the `key` is a counter
+        :type counter: bool
+        :returns: object - the deserialized value of `key`
+        :returns: None - if the call was not successful or the key was not found
+        :raises: :class:`riakcached.exceptions.RiakcachedBadRequest`
+        :raises: :class:`riakcached.exceptions.RiakcachedServiceUnavailable`
         """
         url = "%s/buckets/%s/keys/%s" % (self.base_url, self.bucket, key)
         if counter:
@@ -78,13 +148,30 @@ class RiakClient(object):
         return self.deserialize(data, headers.get("content-type", "text/plain"))
 
     def get_many(self, keys):
-        """
+        """Get the value of multiple keys at once from the client's `bucket`
+
+        :param keys: the list of keys to get
+        :type keys: list
+        :returns: dict - the keys are the keys provided and the values are the results from calls
+            to :func:`get`, except keys whose values are `None` are not included in the result
+        :raises: :class:`riakcached.exceptions.RiakcachedBadRequest`
+        :raises: :class:`riakcached.exceptions.RiakcachedServiceUnavailable`
         """
         results = dict((key, self.get(key)) for key in keys)
         return dict((key, value) for key, value in results.iteritems() if value is not None)
 
     def set(self, key, value, content_type="text/plain"):
-        """
+        """Set the value of a key for the client's `bucket`
+
+        :param key: the key to set the value for
+        :type key: str
+        :param value: the value to set, this will get serialized for the `content_type`
+        :type value: object
+        :param content_type: the Content-Type for `value`
+        :type content_type: str
+        :returns: bool - True if the call is successful, False otherwise
+        :raises: :class:`riakcached.exceptions.RiakcachedBadRequest`
+        :raises: :class:`riakcached.exceptions.RiakcachedPreconditionFailed`
         """
         value = self.serialize(value, content_type)
 
@@ -102,13 +189,30 @@ class RiakClient(object):
             raise exceptions.RiakcachedPreconditionFailed(data)
         return status in (200, 201, 204, 300)
 
-    def set_many(self, values):
+    def set_many(self, values, content_type="text/plain"):
+        """Set the value of multiple keys at once for the client's `bucket`
+
+        :param values: the key -> value pairings for the keys to set
+        :type values: dict
+        :param content_type: the Content-Type for all of the values provided
+        :type content_type: str
+        :returns: dict - the keys are the keys provided and the values are True or False from
+            the calls to :func:`set`
+        :raises: :class:`riakcached.exceptions.RiakcachedBadRequest`
+        :raises: :class:`riakcached.exceptions.RiakcachedPreconditionFailed`
         """
-        """
-        return dict((key, self.set(key, value)) for key, value in values.iteritems())
+        return dict(
+            (key, self.set(key, value, content_type))
+            for key, value in values.iteritems()
+        )
 
     def delete(self, key):
-        """
+        """Delete the provided key from the client's `bucket`
+
+        :param key: the key to delete
+        :type key: str
+        :returns: bool - True if the key was removed, False otherwise
+        :raises: :class:`riakcached.exceptions.RiakcachedBadRequest`
         """
         status, data, _ = self.pool.request(
             method="DELETE",
@@ -119,12 +223,21 @@ class RiakClient(object):
         return status in (204, 404)
 
     def delete_many(self, keys):
-        """
+        """Delete multiple keys at once from the client's `bucket`
+
+        :param keys: list of `str` keys to delete
+        :type keys: list
+        :returns: dict - the keys are the keys provided and the values are True or False from
+            the calls to :func:`delete`
+        :raises: :class:`riakcached.exceptions.RiakcachedBadRequest`
         """
         return dict((key, self.delete(key)) for key in keys)
 
     def stats(self):
-        """
+        """Get the server stats
+
+        :returns: dict - the stats from the server
+        :returns: None - when the call is not successful
         """
         status, data, _ = self.pool.request(
             method="GET",
@@ -135,7 +248,10 @@ class RiakClient(object):
         return None
 
     def props(self):
-        """
+        """Get the properties for the client's `bucket`
+
+        :returns: dict - the `bucket`'s set properties
+        :returns: None - when the call is not successful
         """
         status, data, _ = self.pool.request(
             method="GET",
@@ -146,7 +262,11 @@ class RiakClient(object):
         return None
 
     def set_props(self, props):
-        """
+        """Set the properties for the client's `bucket`
+
+        :param props: the properties to set
+        :type props: dict
+        :returns: bool - True if it is successful otherwise False
         """
         status, _, _ = self.pool.request(
             method="PUT",
@@ -159,7 +279,10 @@ class RiakClient(object):
         return status == 200
 
     def keys(self):
-        """
+        """Get a list of all keys
+
+        :returns: list - list of keys on the server
+        :returns: None - when the call is not successful
         """
         status, data, _ = self.pool.request(
             method="GET",
@@ -170,7 +293,9 @@ class RiakClient(object):
         return None
 
     def ping(self):
-        """
+        """Ping the server to ensure it is up
+
+        :returns: bool - True if it is successful, False otherwise
         """
         status, _, _ = self.pool.request(
             method="GET",
@@ -179,7 +304,15 @@ class RiakClient(object):
         return status == 200
 
     def incr(self, key, value=1):
-        """
+        """Increment the counter with the provided key
+
+        :param key: the counter to increment
+        :type key: str
+        :param value: how much to increment by
+        :type value: int
+        :returns: bool - True/False whether or not it was successful
+        :raises: :class:`riakcached.exceptions.RiakcachedConflict`
+        :raises: :class:`riakcached.exceptions.RiakcachedBadRequest`
         """
         status, data, _ = self.pool.request(
             method="POST",
@@ -194,7 +327,9 @@ class RiakClient(object):
 
 
 class ThreadedRiakClient(RiakClient):
-    """
+    """A threaded version of :class:`riakcached.clients.RiakClient`
+
+    The threaded version uses threads to try to parallelize the {set,get,delete}_many method calls
     """
     def _many(self, target, args_list):
         workers = []
@@ -216,7 +351,13 @@ class ThreadedRiakClient(RiakClient):
         return results
 
     def delete_many(self, keys):
-        """
+        """Delete multiple keys at once from the client's `bucket`
+
+        :param keys: list of `str` keys to delete
+        :type keys: list
+        :returns: dict - the keys are the keys provided and the values are True or False from
+            the calls to :func:`delete`
+        :raises: :class:`riakcached.exceptions.RiakcachedBadRequest`
         """
         def worker(key, results):
             results.put((key, self.delete(key)))
@@ -226,7 +367,16 @@ class ThreadedRiakClient(RiakClient):
         return self._many(worker, args)
 
     def set_many(self, values):
-        """
+        """Set the value of multiple keys at once for the client's `bucket`
+
+        :param values: the key -> value pairings for the keys to set
+        :type values: dict
+        :param content_type: the Content-Type for all of the values provided
+        :type content_type: str
+        :returns: dict - the keys are the keys provided and the values are True or False from
+            the calls to :func:`set`
+        :raises: :class:`riakcached.exceptions.RiakcachedBadRequest`
+        :raises: :class:`riakcached.exceptions.RiakcachedPreconditionFailed`
         """
         def worker(key, value, results):
             results.put((key, self.set(key, value)))
@@ -235,7 +385,14 @@ class ThreadedRiakClient(RiakClient):
         return self._many(worker, args)
 
     def get_many(self, keys):
-        """
+        """Get the value of multiple keys at once from the client's `bucket`
+
+        :param keys: the list of keys to get
+        :type keys: list
+        :returns: dict - the keys are the keys provided and the values are the results from calls
+            to :func:`get`, except keys whose values are `None` are not included in the result
+        :raises: :class:`riakcached.exceptions.RiakcachedBadRequest`
+        :raises: :class:`riakcached.exceptions.RiakcachedServiceUnavailable`
         """
         def worker(key, results):
             results.put((key, self.get(key)))
