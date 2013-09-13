@@ -4,6 +4,7 @@ Riakcached
 [![Build Status](https://travis-ci.org/brettlangdon/riakcached.png?branch=master)](https://travis-ci.org/brettlangdon/riakcached)
 [![Coverage Status](https://coveralls.io/repos/brettlangdon/riakcached/badge.png?branch=master)](https://coveralls.io/r/brettlangdon/riakcached?branch=master)
 [![PyPI version](https://badge.fury.io/py/riakcached.png)](http://badge.fury.io/py/riakcached)
+[![Downloads](https://pypip.in/d/riakcached/badge.png)](https://github.com/brettlangdon/riakcached)
 
 A Memcached like interface to the Riak HTTP Client. [Read The Docs](http://riakcached.readthedocs.org/en/latest/)
 
