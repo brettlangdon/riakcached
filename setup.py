@@ -13,7 +13,6 @@ setup(
     install_requires=["urllib3==1.7"],
     setup_requires=["nose>=1.0"],
     description="A Memcached like interface to Riak",
-    long_description=open("README.md").read(),
     license="MIT",
     url='https://github.com/brettlangdon/riakcached',
     classifiers=[
