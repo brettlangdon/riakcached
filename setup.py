@@ -10,7 +10,7 @@ setup(
     author="Brett Langdon",
     author_email="brett@blangdon.com",
     packages=find_packages(),
-    install_requires=["urllib3==1.7"],
+    install_requires=["urllib3==1.26.5"],
     setup_requires=["nose>=1.0"],
     description="A Memcached like interface to Riak",
     license="MIT",
